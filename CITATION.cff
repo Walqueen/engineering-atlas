@@ -14,7 +14,7 @@ type: software
 authors:
   - alias: Walqueen
     affiliation: "Independent"
-doi: "10.5281/zenodo.22245192"
+doi: "10.5281/zenodo.22245191"
 repository-code: "https://github.com/Walqueen/engineering-atlas"
 url: "https://walqueen.github.io/engineering-atlas/"
 license: CC-BY-4.0

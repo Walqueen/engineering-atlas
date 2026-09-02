@@ -59,11 +59,16 @@ Three layers, none of which depends on the account that published this:
 |---|---|---|
 | GitHub Pages | the live page; rebuilds on push, never sleeps | live |
 | [Software Heritage](https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://github.com/Walqueen/engineering-atlas) | the full history, content-addressed, archive of record for source code | archived, first snapshot `swh:1:snp:cc17a925656af7d12d379d015bc4d3412f869269` |
-| Zenodo DOI | a citable identifier, versioned: one concept DOI that always resolves to the newest release, one per version that never changes | **live** — [10.5281/zenodo.22245192](https://doi.org/10.5281/zenodo.22245192) |
+| Zenodo DOI | a citable identifier, versioned: one concept DOI that always resolves to the newest release, one per version that never changes | **live** — [10.5281/zenodo.22245191](https://doi.org/10.5281/zenodo.22245191) |
 
 Software Heritage re-crawls on its own, and a new snapshot can be requested at
 any time from the "Save code now" form, or by POSTing to
 `https://archive.softwareheritage.org/api/1/origin/save/git/url/<repo>/`.
+
+**Cite the concept DOI**, not a version DOI. `10.5281/zenodo.22245191` always
+resolves to the newest version; each individual release also keeps its own
+permanent DOI for when a specific version matters. The concept DOI is the one to
+cite in a paper, because it does not go stale when the work is updated.
 
 ### Releasing a new version
 
