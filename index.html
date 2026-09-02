@@ -261,11 +261,11 @@ footer p { max-width:var(--measure); }
   <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
      study drives its cells with</p>
   <div class="status">
-    <span>commit <b>cd981d4</b></span>
-    <span>126 commits</span>
+    <span>commit <b>95a0a8e</b></span>
+    <span>130 commits</span>
     <span><b>96</b> modules</span>
-    <span><b>803</b> ground-truth tests in 39 files</span>
-    <span><b>20</b> claims withdrawn</span>
+    <span><b>806</b> ground-truth tests in 39 files</span>
+    <span><b>21</b> claims withdrawn</span>
   </div>
 </header>
 
@@ -575,11 +575,22 @@ footer p { max-width:var(--measure); }
 
 <section>
   <p class="eyebrow">The ledger</p>
-  <h2>20 claims this project made and then withdrew</h2>
+  <h2>21 claims this project made and then withdrew</h2>
   <p>Ordered newest first. Each entry names the mechanism that caught it rather than the person, because the mechanisms are the reusable part. Hardware corrections are recorded here on the same terms as statistical ones — a bench result withdrawn and a claim withdrawn are the same act, and separating them would let one look more disciplined than the other. Nothing here was quietly overwritten; a retraction that leaves no trace is indistinguishable from never having made the claim.</p>
   <div class="ledger-wrap">
     <table>
       <tbody>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">The low corner frequency, as calculated from one stage&#x27;s R and C.</p>
+              <p class="repl">It cannot be calculated that way, and the margin is not close. Two cascaded first-order high-pass sections each designed at 0.16 Hz give a composite −3 dB point of 0.2486 Hz buffered (+55.4%, because two stages each down 3 dB are down 6 dB together) and 0.4275 Hz once stage two loads stage one (a further +72.0%). At a 10:1 impedance ratio — the usual rule of thumb for independence — loading still leaves +7.1%. The confound requirement is 0.5% and its false-positive rate reaches 0.92 at 1%, so every one of these is 7× to 140× past the point where the clean-residual checkpoint stops working. Simulate the circuit as built, then measure the assembled front end.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Applying the mechanism that broke the high corner to the corner the statistics actually consume, and computing the size of it instead of recommending a simulation.</p>
+            </td>
+            <td><span class="tag t-unsound">unsound</span>
+                <code class="where">src/core/battery/analog_frontend.py</code></td>
+          </tr>
           <tr>
             <td class="num">2026-09-02</td>
             <td>
@@ -886,7 +897,7 @@ footer p { max-width:var(--measure); }
      28 statistical modules ·
      8 battery modules ·
      14 method documents ·
-     head cd981d4 “Put the instrument&#x27;s own output on the public page, above the mathematics” (2026-09-01)</p>
+     head 95a0a8e “Predict what the low-corner simulation will find, before running it” (2026-09-01)</p>
 </section>
 
 <section>
@@ -916,7 +927,7 @@ footer p { max-width:var(--measure); }
 <footer>
   <p>Simulation-validated design work. No cell has been measured. Every number
      on this page is reproducible from the repository at commit
-     <code>cd981d4</code>.</p>
+     <code>95a0a8e</code>.</p>
 </footer>
 
 </main>
