@@ -59,25 +59,24 @@ Three layers, none of which depends on the account that published this:
 |---|---|---|
 | GitHub Pages | the live page; rebuilds on push, never sleeps | live |
 | [Software Heritage](https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://github.com/Walqueen/engineering-atlas) | the full history, content-addressed, archive of record for source code | archived, first snapshot `swh:1:snp:cc17a925656af7d12d379d015bc4d3412f869269` |
-| Zenodo DOI | a citable identifier, versioned: one concept DOI that always resolves to the newest release, one per version that never changes | **not yet linked** — see below |
+| Zenodo DOI | a citable identifier, versioned: one concept DOI that always resolves to the newest release, one per version that never changes | **live** — [10.5281/zenodo.22245192](https://doi.org/10.5281/zenodo.22245192) |
 
 Software Heritage re-crawls on its own, and a new snapshot can be requested at
 any time from the "Save code now" form, or by POSTing to
 `https://archive.softwareheritage.org/api/1/origin/save/git/url/<repo>/`.
 
-### Linking Zenodo (one time, three clicks)
+### Releasing a new version
 
-1. Sign in at [zenodo.org](https://zenodo.org) with GitHub.
-2. Open **GitHub** in the account menu, find `Walqueen/engineering-atlas`, and
-   flip its switch **on**.
-3. Back here, publish a GitHub **release** (`gh release create v1.0.0`). Zenodo
-   archives that release and mints the DOI.
+Zenodo is linked, so every GitHub **release** is archived automatically as a new
+version under the same concept DOI:
 
-Order matters: Zenodo only archives releases created *after* the switch is on,
-so linking first and releasing second is the whole trick. `.zenodo.json` in this
-repository already carries the title, authorship, licence and description, so
-nothing needs typing into their form. Once the DOI exists, add it to
-`CITATION.cff` and to the badge at the top of this file.
+```
+gh release create vX.Y.Z --title "..." --notes-file notes.md
+```
+
+The concept DOI always resolves to the newest version; each version also keeps
+its own permanent DOI. `.zenodo.json` carries the metadata, so there is no form
+to fill in.
 
 ## Licence
 
