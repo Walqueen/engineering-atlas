@@ -166,9 +166,13 @@ table.matrix tbody th { width:6rem; color:var(--ink); vertical-align:top;
 table.matrix td { padding:.9rem 1rem; width:auto; vertical-align:top;
                   border:1px solid var(--rule-soft); font-size:.9375rem; }
 table.matrix tbody tr { border-bottom:none; }
-td.m-ok { border-left:2px solid var(--trace); }
-td.m-bad { border-left:2px solid var(--retract); color:var(--ink); }
-td.m-warn { border-left:2px solid var(--rail); color:var(--muted); }
+/* `table.matrix td` above is (0,1,2); a bare `td.m-ok` is (0,1,1) and LOSES,
+   which silently painted all four cells the same neutral border and left the
+   one actionable alarm indistinguishable from the three that are not. Matched
+   specificity, deliberately, rather than reaching for !important. */
+table.matrix td.m-ok { border-left:3px solid var(--trace); }
+table.matrix td.m-bad { border-left:3px solid var(--retract); color:var(--ink); }
+table.matrix td.m-warn { border-left:3px solid var(--rail); color:var(--muted); }
 
 ul.gates { list-style:none; margin:1.4rem 0; padding:0;
            max-width:var(--measure); }
@@ -257,8 +261,8 @@ footer p { max-width:var(--measure); }
   <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
      study drives its cells with</p>
   <div class="status">
-    <span>commit <b>5b805df</b></span>
-    <span>125 commits</span>
+    <span>commit <b>cd981d4</b></span>
+    <span>126 commits</span>
     <span><b>96</b> modules</span>
     <span><b>803</b> ground-truth tests in 39 files</span>
     <span><b>20</b> claims withdrawn</span>
@@ -882,7 +886,7 @@ footer p { max-width:var(--measure); }
      28 statistical modules ·
      8 battery modules ·
      14 method documents ·
-     head 5b805df “Record hardware corrections in the same ledger as statistical ones” (2026-09-01)</p>
+     head cd981d4 “Put the instrument&#x27;s own output on the public page, above the mathematics” (2026-09-01)</p>
 </section>
 
 <section>
@@ -912,7 +916,7 @@ footer p { max-width:var(--measure); }
 <footer>
   <p>Simulation-validated design work. No cell has been measured. Every number
      on this page is reproducible from the repository at commit
-     <code>5b805df</code>.</p>
+     <code>cd981d4</code>.</p>
 </footer>
 
 </main>
