@@ -153,6 +153,33 @@ figcaption { font-size:.9375rem; color:var(--muted); max-width:var(--measure);
   margin:1.75rem 0; max-width:var(--measure); overflow-x:auto;
 }
 
+/* ---- the four-state output ---- */
+table.matrix { min-width:0; width:100%; max-width:var(--measure);
+               margin:1.5rem 0 1.25rem; border-collapse:collapse; }
+table.matrix th { font-family:var(--mono); font-size:.6875rem;
+                  letter-spacing:.1em; text-transform:uppercase;
+                  color:var(--muted); font-weight:400; text-align:left;
+                  padding:.5rem .9rem .5rem 0; width:auto;
+                  vertical-align:bottom; }
+table.matrix tbody th { width:6rem; color:var(--ink); vertical-align:top;
+                        padding-top:1.05rem; }
+table.matrix td { padding:.9rem 1rem; width:auto; vertical-align:top;
+                  border:1px solid var(--rule-soft); font-size:.9375rem; }
+table.matrix tbody tr { border-bottom:none; }
+td.m-ok { border-left:2px solid var(--trace); }
+td.m-bad { border-left:2px solid var(--retract); color:var(--ink); }
+td.m-warn { border-left:2px solid var(--rail); color:var(--muted); }
+
+ul.gates { list-style:none; margin:1.4rem 0; padding:0;
+           max-width:var(--measure); }
+ul.gates li { display:grid; grid-template-columns:5rem 1fr; gap:.3rem .9rem;
+              padding:.75rem 0; border-bottom:1px solid var(--rule-soft); }
+.g-mark { font-family:var(--mono); font-size:.625rem; letter-spacing:.12em;
+          text-transform:uppercase; color:var(--muted); padding-top:.15rem; }
+.g-mark.g-passed { color:var(--trace); }
+.g-name { font-family:var(--display); font-weight:600; font-size:.9375rem; }
+.g-note { grid-column:2; color:var(--muted); font-size:.875rem; }
+
 /* ---- ledger ---- */
 .ledger-wrap { overflow-x:auto; border-top:1px solid var(--rule); }
 table { border-collapse:collapse; width:100%; min-width:44rem; }
@@ -230,8 +257,8 @@ footer p { max-width:var(--measure); }
   <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
      study drives its cells with</p>
   <div class="status">
-    <span>commit <b>e2f8938</b></span>
-    <span>124 commits</span>
+    <span>commit <b>5b805df</b></span>
+    <span>125 commits</span>
     <span><b>96</b> modules</span>
     <span><b>803</b> ground-truth tests in 39 files</span>
     <span><b>20</b> claims withdrawn</span>
@@ -239,6 +266,75 @@ footer p { max-width:var(--measure); }
 </header>
 
 <main class="spine">
+
+<section>
+  <p class="eyebrow">The output</p>
+  <h2>What the instrument actually says</h2>
+  <p>The whole output is one cell of a two-by-two: a reading, crossed with
+     whether the instrument was fit to take it. It is drawn as a matrix rather
+     than as four results because the axes carry the argument. An abnormal
+     reading through a failing calibration is not a finding, it is a retest, and
+     four separate cards would let a reader forget that.</p>
+
+  <table class="matrix">
+    <thead>
+      <tr><th></th><th>Calibration passing</th><th>Calibration failing</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Normal</th>
+        <td class="m-ok">Battery healthy, no action needed</td>
+        <td class="m-warn">Calibration unreliable, results inconclusive — retest</td>
+      </tr>
+      <tr>
+        <th>Abnormal</th>
+        <td class="m-bad">Abnormal behaviour, recommend replacement</td>
+        <td class="m-warn">Abnormal reading, but calibration unreliable — retest
+          before deciding</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Only one cell is an instruction to act.</strong> The two on the
+     right are the instrument disqualifying itself, which is a statement about
+     the measurement and not about the cell — so they are deliberately not
+     painted as alarms.</p>
+  <p><strong>And the right-hand axis is the mathematics below.</strong>
+     Calibration passes when the front end has dynamic-range headroom above the
+     critical value derived in the next section. Below it the tail fit does not
+     widen or get noisier; it reverses sign and reports a bounded tail. So ρ
+     against ρ* is not a diagnostic that sits beside this table — it is the
+     column you land in. That is where the statistics stop being a result and
+     become an instruction.</p>
+</section>
+
+<section>
+  <p class="eyebrow">The gates</p>
+  <h2>What would have to happen for this to be wrong</h2>
+  <p>“Finalised” does not mean the circuit is drawn. It means these are run.
+     Everything else can be settled on paper; these four need the instrument in
+     hand, and nothing past them is settled.</p>
+  <ul class="gates">
+    <li><span class="g-mark g-passed">passed</span>
+      <span class="g-name">Gate 1.8 — bench discrepancy</span>
+      <span class="g-note">Bench Test 1's 0.4 V discrepancy declared invalid and
+        superseded, on the record, rather than quietly kept. It is in the
+        retraction ledger below on the same terms as the statistical
+        retractions.</span></li>
+    <li><span class="g-mark">pending</span>
+      <span class="g-name">Gate 2</span>
+      <span class="g-note">Requires the real instrument.</span></li>
+    <li><span class="g-mark">pending</span>
+      <span class="g-name">Gate 3</span>
+      <span class="g-note">Requires the real instrument.</span></li>
+    <li><span class="g-mark">pending</span>
+      <span class="g-name">Gate 4</span>
+      <span class="g-note">Requires the real instrument.</span></li>
+  </ul>
+  <p>Publishing the criteria that would falsify the work, next to which of them
+     have actually been run, costs nothing and is the whole argument for
+     trusting the rest of the page.</p>
+</section>
 
 <section>
   <p class="eyebrow">The result</p>
@@ -786,7 +882,7 @@ footer p { max-width:var(--measure); }
      28 statistical modules ·
      8 battery modules ·
      14 method documents ·
-     head e2f8938 “The statistics and the hardware are one project; wire the join” (2026-09-01)</p>
+     head 5b805df “Record hardware corrections in the same ledger as statistical ones” (2026-09-01)</p>
 </section>
 
 <section>
@@ -816,7 +912,7 @@ footer p { max-width:var(--measure); }
 <footer>
   <p>Simulation-validated design work. No cell has been measured. Every number
      on this page is reproducible from the repository at commit
-     <code>e2f8938</code>.</p>
+     <code>5b805df</code>.</p>
 </footer>
 
 </main>
