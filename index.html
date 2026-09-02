@@ -233,7 +233,7 @@ footer p { max-width:var(--measure); }
     <span>commit <b>619db88</b></span>
     <span>121 commits</span>
     <span><b>96</b> modules</span>
-    <span><b>799</b> ground-truth tests in 39 files</span>
+    <span><b>803</b> ground-truth tests in 39 files</span>
     <span><b>17</b> claims withdrawn</span>
   </div>
 </header>
@@ -401,6 +401,42 @@ footer p { max-width:var(--measure); }
          the same defect one level up.</p>
     </div>
   </div>
+</section>
+
+<section>
+  <p class="eyebrow">Put together</p>
+  <h2>Detect, locate, correct — or say you could not</h2>
+  <p>The pieces above existed separately and did not talk to each other. One
+     answered “is there a rail”, another answered “what is the tail given one”,
+     and the caller was left to notice that the second question is only well
+     posed after the first. In practice that means the correction gets applied
+     when somebody remembers to, which is not a property of the data.</p>
+  <p>One call now does all three, and the third outcome is the one that would
+     not otherwise exist:</p>
+  <ul class="plain">
+    <li><strong>A ceiling is found</strong> — located from the exact ties, which
+      give its position for free and to full precision, then fitted with the
+      censored likelihood.</li>
+    <li><strong>No ceiling is found</strong> — fitted naively, and told plainly
+      that <em>not detected is not not there</em>: it means the limit was not
+      exercised in this sample, which is a different claim from the limit being
+      far away.</li>
+    <li><strong>Inconclusive</strong> — <strong>no tail estimate at all.</strong>
+      The detector has regimes where it cannot answer, and returning a
+      confident number there would attach an answer to a question nobody
+      managed to ask. That is the failure this project studies, committed by
+      the analysis rather than by the instrument.</li>
+  </ul>
+  <p>Where it does fit, it reports how much of the estimate is actually
+     supported: below ρ* the correction is carrying the whole thing, and the
+     result is flagged as weakly identified rather than handed over as a number.
+     The trigger is ρ* itself, not a round constant — which is the point of
+     having derived it.</p>
+  <p>It also had to be taught its own lesson. The first version chose the
+     tail threshold by rank, and with a fifth of the sample on the rail the
+     rank-<em>k</em> statistic <em>is</em> the rail: every excess is zero and it
+     returned “inconclusive” on the most obviously clipped data available. The
+     exact defect it exists to prevent, one level up.</p>
 </section>
 
 <section>
