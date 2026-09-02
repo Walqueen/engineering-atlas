@@ -104,7 +104,7 @@ header.mast { padding:5.5rem 0 2.5rem; }
 .mseq { display:block; width:100%; height:14px; margin:2.2rem 0 0;
         fill:var(--ink); opacity:.85; }
 .mseq-cap { font-family:var(--mono); font-size:.6875rem; color:var(--muted);
-            letter-spacing:.06em; margin:.45rem 0 0; }
+            letter-spacing:.06em; margin:.45rem 0 0; max-width:none; }
 
 .status {
   display:flex; flex-wrap:wrap; gap:0 2rem; margin:2.5rem 0 0;
@@ -197,6 +197,16 @@ ul.plain li::marker { color:var(--muted); }
   padding-left:1.15rem;
 }
 .aside p { max-width:38ch; }
+table.mini { min-width:0; width:100%; margin:.9rem 0 1.1rem;
+             font-family:var(--mono); font-size:.75rem; }
+table.mini th { text-align:right; font-weight:400; color:var(--muted);
+                padding:0 0 .3rem .6rem; border-bottom:1px solid var(--rule); }
+table.mini td { text-align:right; width:auto; padding:.28rem 0 .28rem .6rem; }
+table.mini th:first-child, table.mini td:first-child { text-align:left;
+             padding-left:0; width:auto; }
+table.mini tbody tr { border-bottom:none; }
+td.bad { color:var(--retract); }
+td.good { color:var(--trace); }
 .aside b { color:var(--ink); font-weight:500; }
 
 footer { margin-top:5rem; padding-top:1.5rem; border-top:1px solid var(--rule);
@@ -223,7 +233,7 @@ footer p { max-width:var(--measure); }
     <span>commit <b>9c09d4f</b></span>
     <span>119 commits</span>
     <span><b>96</b> modules</span>
-    <span><b>796</b> ground-truth tests in 39 files</span>
+    <span><b>799</b> ground-truth tests in 39 files</span>
     <span><b>17</b> claims withdrawn</span>
   </div>
 </header>
@@ -315,15 +325,37 @@ footer p { max-width:var(--measure); }
          region hide the problem rather than solve it.</strong> Stating it that
          way pre-empts the obvious objection, because it explains why reaching
          for Pickands is not a fix.</p>
+      <p>That is three negatives, which is a warning without a remedy. There is
+         a fourth case, and it is the useful one. <strong>Tell the likelihood
+         what the instrument did.</strong> A sample sitting on the rail is not a
+         measurement of the value; it is the statement that the value was at
+         least the rail, and a censored likelihood says exactly that. At ρ = 2,
+         where the naive fit returns −0.999, the censored fit returns
+         <strong>0.304</strong> against a true 0.3.</p>
+      <p>So the failure was never in maximum likelihood. It was in a likelihood
+         written for data that had not been clipped. The recommendation is not
+         to change estimator; it is to model the censoring.</p>
     </div>
     <div class="aside">
-      <p><b>Measured, not argued.</b> The naive generalised-Pareto MLE is the
-         worst of four estimators at every headroom below 10, and it degrades
-         fastest: 34× between ρ = 30 and ρ = 2, against 6.5× for Hill and 1.0×
-         for Pickands.</p>
-      <p><b>Reported against interest.</b> Hill’s excellent error under heavy
-         saturation is two biases cancelling at particular parameters. It is in
-         the results and it is explicitly not a recommendation.</p>
+      <p><b>Four estimators, one ground truth</b> — ξ = 0.3, 20,000 points,
+         1,000 exceedances.</p>
+      <table class="mini">
+        <thead><tr><th>ρ</th><th>naive</th><th>Hill</th><th>Pick.</th>
+          <th>cens.</th></tr></thead>
+        <tbody>
+          <tr><td>2.0</td><td class="bad">−0.999</td><td>0.304</td><td>0.318</td>
+            <td class="good">0.304</td></tr>
+          <tr><td>4.24</td><td class="bad">−0.061</td><td>0.359</td><td>0.318</td>
+            <td class="good">0.303</td></tr>
+          <tr><td>30</td><td>0.291</td><td>0.384</td><td>0.318</td>
+            <td class="good">0.297</td></tr>
+        </tbody>
+      </table>
+      <p><b>Reported against interest.</b> Hill’s error at ρ = 2 is excellent and
+         it is still not the answer: its bias climbs monotonically as the ceiling
+         recedes, which an estimator recovering the right quantity would not do.
+         Two biases cancel at those parameters. It is in the results and it is
+         explicitly not a recommendation.</p>
     </div>
   </div>
 </section>
@@ -405,7 +437,7 @@ footer p { max-width:var(--measure); }
 <section>
   <p class="eyebrow">The ledger</p>
   <h2>17 claims this project made and then withdrew</h2>
-  <p>Every claim this project made and then withdrew. Ordered newest first. `caught_by` is the mechanism that found it, not the person; the point of the ledger is that the mechanisms are reusable.</p>
+  <p>Ordered newest first. Each entry names the mechanism that caught it rather than the person, because the mechanisms are the reusable part. Nothing here was quietly overwritten; a retraction that leaves no trace is indistinguishable from never having made the claim.</p>
   <div class="ledger-wrap">
     <table>
       <tbody>
