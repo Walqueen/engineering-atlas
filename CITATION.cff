@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you refer to this work, please cite it as below."
+title: "Engineering ATLAS: the dynamic-range law and its retraction ledger"
+abstract: >-
+  An instrument short of dynamic range does not return a cautious answer. It
+  reports that the quantity is bounded, which is the most reassuring wrong
+  answer available. This work derives the critical headroom below which a
+  maximum-likelihood generalised-Pareto fit crosses into that failure, as the
+  root of E[Z^2] = 2 (E[Z])^2 on the censored observable; establishes that the
+  failure belongs to the estimator rather than the instrument, since Hill is
+  structurally blind to it and Pickands avoids rather than corrects it; and
+  publishes a ledger of every claim the project itself withdrew.
+type: software
+authors:
+  - alias: Walqueen
+    affiliation: "Independent"
+repository-code: "https://github.com/Walqueen/engineering-atlas"
+url: "https://walqueen.github.io/engineering-atlas/"
+license: CC-BY-4.0
+keywords:
+  - extreme value theory
+  - generalised Pareto distribution
+  - measurement instrumentation
+  - dynamic range
+  - censoring
+  - lithium-ion cells
+  - research integrity

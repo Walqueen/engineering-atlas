@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An instrument short of dynamic range reports a bounded tail. The critical headroom below which it does, derived in closed form.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="The Rail">
+<meta property="og:description" content="An instrument short of dynamic range reports a bounded tail. The critical headroom below which it does, derived in closed form.">
+<meta property="og:type" content="article">
+<style>
+  html { color-scheme: light dark; }
+  body { margin: 0; font: 14px system-ui, sans-serif; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>The Rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground:#E7EBEE; --surface:#F4F6F8; --sunk:#DFE5EA;
+  --ink:#111820; --muted:#5A6672; --rule:#C6CFD6; --rule-soft:#D8DFE4;
+  --trace:#1D5FBF; --rail:#B26A00; --retract:#A32C3C;
+  --shadow:0 1px 0 rgba(17,24,32,.06);
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --measure:66ch; --spine:11rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0D1418; --surface:#131C22; --sunk:#0A1013;
+    --ink:#DCE4EA; --muted:#8A98A4; --rule:#243139; --rule-soft:#1B252B;
+    --trace:#4A8CDE; --rail:#C08420; --retract:#DD6076;
+    --shadow:0 1px 0 rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0D1418; --surface:#131C22; --sunk:#0A1013;
+  --ink:#DCE4EA; --muted:#8A98A4; --rule:#243139; --rule-soft:#1B252B;
+  --trace:#4A8CDE; --rail:#C08420; --retract:#DD6076;
+  --shadow:0 1px 0 rgba(0,0,0,.4);
+}
+
+*,*::before,*::after { box-sizing:border-box; }
+body {
+  background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:1.0625rem; line-height:1.65;
+  font-weight:300; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible { outline:2px solid var(--trace); outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation:none!important; transition:none!important; }
+}
+
+.wrap { max-width:64rem; margin:0 auto; padding:0 1.5rem 6rem; }
+
+/* ---- the spine: a time axis down the left, with a tick per section ---- */
+.spine { position:relative; }
+@media (min-width: 62rem) {
+  .spine { padding-left:var(--spine); }
+  .spine::before {
+    content:""; position:absolute; left:calc(var(--spine) - 2.5rem); top:.55rem;
+    bottom:0; width:1px; background:var(--rule);
+  }
+  .spine > section { position:relative; }
+  .spine > section::before {
+    content:""; position:absolute; left:-2.5rem; top:1.25rem;
+    width:.5rem; height:1px; background:var(--rule);
+  }
+  .eyebrow { position:absolute; left:calc(-1 * var(--spine)); width:8rem;
+              top:.75rem; text-align:right; margin:0; }
+}
+
+h1,h2,h3 { font-family:var(--display); font-weight:600; text-wrap:balance;
+           letter-spacing:-.015em; margin:0; }
+h1 { font-size:clamp(2.6rem,7vw,4.4rem); line-height:.98; font-weight:700;
+     letter-spacing:-.03em; }
+h2 { font-size:clamp(1.4rem,2.6vw,1.75rem); line-height:1.15; margin:0 0 .35rem; }
+h3 { font-size:1.0625rem; line-height:1.3; margin:0 0 .3rem; }
+p { max-width:var(--measure); margin:0 0 1.05rem; }
+a { color:var(--trace); text-underline-offset:.2em;
+    text-decoration-thickness:from-font; }
+strong { font-weight:500; }
+em { font-style:italic; }
+
+.eyebrow {
+  font-family:var(--mono); font-size:.6875rem; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 .5rem;
+}
+.num, code, .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+/* ---- masthead ---- */
+header.mast { padding:5.5rem 0 2.5rem; }
+.mast .lede {
+  font-size:clamp(1.2rem,2.2vw,1.45rem); line-height:1.45; font-weight:300;
+  max-width:44ch; margin:1.6rem 0 0; color:var(--ink);
+}
+.mast .lede b { font-weight:500; color:var(--rail); }
+.mseq { display:block; width:100%; height:14px; margin:2.2rem 0 0;
+        fill:var(--ink); opacity:.85; }
+.mseq-cap { font-family:var(--mono); font-size:.6875rem; color:var(--muted);
+            letter-spacing:.06em; margin:.45rem 0 0; }
+
+.status {
+  display:flex; flex-wrap:wrap; gap:0 2rem; margin:2.5rem 0 0;
+  padding:.85rem 0; border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+  font-family:var(--mono); font-size:.75rem; color:var(--muted);
+}
+.status b { color:var(--ink); font-weight:500; }
+
+section { padding:3.75rem 0 0; }
+
+/* ---- figure ---- */
+figure { margin:1.75rem 0 1.25rem; }
+.plot { background:var(--surface); border:1px solid var(--rule-soft);
+        padding:.5rem .25rem .25rem; overflow-x:auto; }
+svg.trace { display:block; width:100%; height:auto; min-width:34rem; }
+.grid { stroke:var(--rule-soft); stroke-width:1; }
+.tick,.axis,.pt,.rail-label { font-family:var(--mono); fill:var(--muted); }
+.tick { font-size:11px; }
+.axis { font-size:11px; letter-spacing:.08em; }
+.pt { font-size:11px; fill:var(--ink); }
+.line { fill:none; stroke:var(--trace); stroke-width:2;
+        stroke-linejoin:round; stroke-linecap:round; }
+.rail { stroke:var(--rail); stroke-width:1.5; stroke-dasharray:5 4; }
+.rail-label { font-size:11px; fill:var(--rail); }
+.dot { fill:var(--trace); stroke:var(--surface); stroke-width:2; }
+.dot.exact { fill:var(--rail); }
+.hit { fill:transparent; }
+.cross { opacity:0; }
+.cross line { stroke:var(--muted); stroke-width:1; stroke-dasharray:3 3; }
+.cross circle { fill:var(--trace); stroke:var(--surface); stroke-width:2; }
+.readout {
+  font-family:var(--mono); font-size:.75rem; color:var(--muted);
+  padding:.4rem .6rem; min-height:1.9rem;
+  border-top:1px solid var(--rule-soft); background:var(--surface);
+}
+.readout b { color:var(--ink); font-weight:500; }
+figcaption { font-size:.9375rem; color:var(--muted); max-width:var(--measure);
+             margin:.7rem 0 0; }
+
+/* ---- callout: an equation gets to be the loudest thing on the page ---- */
+.equation {
+  font-family:var(--mono); font-size:clamp(1.15rem,3.2vw,1.6rem);
+  letter-spacing:-.01em; color:var(--ink); background:var(--sunk);
+  border-left:2px solid var(--trace); padding:1.15rem 1.35rem;
+  margin:1.75rem 0; max-width:var(--measure); overflow-x:auto;
+}
+
+/* ---- ledger ---- */
+.ledger-wrap { overflow-x:auto; border-top:1px solid var(--rule); }
+table { border-collapse:collapse; width:100%; min-width:44rem; }
+tbody tr { border-bottom:1px solid var(--rule-soft); }
+td { padding:1.15rem 1rem 1.15rem 0; vertical-align:top; }
+td:first-child { width:6.5rem; color:var(--muted); font-size:.8125rem;
+                 padding-top:1.35rem; }
+td:last-child { width:14rem; padding-right:0; }
+.claim { margin:0 0 .4rem; font-weight:400; }
+.repl { margin:0 0 .5rem; color:var(--muted); font-size:.9375rem; }
+.caught { margin:0; font-size:.875rem; color:var(--muted); }
+.caught .lbl { font-family:var(--mono); font-size:.6875rem; letter-spacing:.1em;
+               text-transform:uppercase; color:var(--ink); margin-right:.4rem; }
+.tag {
+  display:inline-block; font-family:var(--mono); font-size:.6875rem;
+  letter-spacing:.08em; text-transform:uppercase; padding:.15rem .45rem;
+  border:1px solid currentColor; color:var(--retract); white-space:nowrap;
+}
+.tag.t-corrected, .tag.t-superseded { color:var(--rail); }
+.where { display:block; font-size:.6875rem; color:var(--muted);
+         margin-top:.5rem; word-break:break-all; }
+
+/* ---- decisions: a definition list, not cards ---- */
+dl.decisions { margin:1.5rem 0 0; max-width:var(--measure); }
+dl.decisions dt {
+  font-family:var(--display); font-weight:600; font-size:1.0625rem;
+  padding-top:1.1rem; border-top:1px solid var(--rule-soft);
+}
+dl.decisions dd { margin:.35rem 0 1.1rem; color:var(--muted); }
+dl.decisions dd .verdict { color:var(--ink); }
+dl.decisions dd code { font-size:.8125rem; color:var(--ink); }
+
+.two { display:grid; gap:2.5rem; }
+@media (min-width: 48rem) { .two { grid-template-columns:1.35fr 1fr; } }
+
+.aside {
+  font-size:.9375rem; color:var(--muted); border-left:1px solid var(--rule);
+  padding-left:1.15rem;
+}
+.aside p { max-width:38ch; }
+.aside b { color:var(--ink); font-weight:500; }
+
+footer { margin-top:5rem; padding-top:1.5rem; border-top:1px solid var(--rule);
+         font-size:.875rem; color:var(--muted); }
+footer p { max-width:var(--measure); }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow" style="position:static;width:auto;text-align:left">
+    Engineering ATLAS · battery Channel A/B · built 2026-09-02</p>
+  <h1>An instrument short<br>of range does not<br>say “I don’t know”.</h1>
+  <p class="lede">It says <b>the quantity is bounded</b>. That is the most
+     reassuring wrong answer available, and there is a number below which every
+     maximum-likelihood tail fit returns it.</p>
+  <svg class="mseq" viewBox="0 0 720 14" role="img" aria-label="One full period of the 127-bit maximum-length sequence chosen as the excitation waveform."><rect x="0.000" y="0" width="5.669" height="14"/><rect x="5.669" y="0" width="5.669" height="14"/><rect x="11.339" y="0" width="5.669" height="14"/><rect x="17.008" y="0" width="5.669" height="14"/><rect x="22.677" y="0" width="5.669" height="14"/><rect x="28.346" y="0" width="5.669" height="14"/><rect x="34.016" y="0" width="5.669" height="14"/><rect x="73.701" y="0" width="5.669" height="14"/><rect x="107.717" y="0" width="5.669" height="14"/><rect x="113.386" y="0" width="5.669" height="14"/><rect x="141.732" y="0" width="5.669" height="14"/><rect x="153.071" y="0" width="5.669" height="14"/><rect x="175.748" y="0" width="5.669" height="14"/><rect x="181.417" y="0" width="5.669" height="14"/><rect x="187.087" y="0" width="5.669" height="14"/><rect x="192.756" y="0" width="5.669" height="14"/><rect x="209.764" y="0" width="5.669" height="14"/><rect x="232.441" y="0" width="5.669" height="14"/><rect x="243.780" y="0" width="5.669" height="14"/><rect x="249.449" y="0" width="5.669" height="14"/><rect x="266.457" y="0" width="5.669" height="14"/><rect x="272.126" y="0" width="5.669" height="14"/><rect x="277.795" y="0" width="5.669" height="14"/><rect x="289.134" y="0" width="5.669" height="14"/><rect x="300.472" y="0" width="5.669" height="14"/><rect x="317.480" y="0" width="5.669" height="14"/><rect x="323.150" y="0" width="5.669" height="14"/><rect x="328.819" y="0" width="5.669" height="14"/><rect x="334.488" y="0" width="5.669" height="14"/><rect x="340.157" y="0" width="5.669" height="14"/><rect x="351.496" y="0" width="5.669" height="14"/><rect x="379.843" y="0" width="5.669" height="14"/><rect x="385.512" y="0" width="5.669" height="14"/><rect x="391.181" y="0" width="5.669" height="14"/><rect x="413.858" y="0" width="5.669" height="14"/><rect x="430.866" y="0" width="5.669" height="14"/><rect x="447.874" y="0" width="5.669" height="14"/><rect x="453.543" y="0" width="5.669" height="14"/><rect x="464.882" y="0" width="5.669" height="14"/><rect x="470.551" y="0" width="5.669" height="14"/><rect x="481.890" y="0" width="5.669" height="14"/><rect x="493.228" y="0" width="5.669" height="14"/><rect x="498.898" y="0" width="5.669" height="14"/><rect x="510.236" y="0" width="5.669" height="14"/><rect x="515.906" y="0" width="5.669" height="14"/><rect x="521.575" y="0" width="5.669" height="14"/><rect x="527.244" y="0" width="5.669" height="14"/><rect x="538.583" y="0" width="5.669" height="14"/><rect x="544.252" y="0" width="5.669" height="14"/><rect x="566.929" y="0" width="5.669" height="14"/><rect x="572.598" y="0" width="5.669" height="14"/><rect x="583.937" y="0" width="5.669" height="14"/><rect x="600.945" y="0" width="5.669" height="14"/><rect x="612.283" y="0" width="5.669" height="14"/><rect x="617.953" y="0" width="5.669" height="14"/><rect x="623.622" y="0" width="5.669" height="14"/><rect x="634.961" y="0" width="5.669" height="14"/><rect x="640.630" y="0" width="5.669" height="14"/><rect x="646.299" y="0" width="5.669" height="14"/><rect x="663.307" y="0" width="5.669" height="14"/><rect x="668.976" y="0" width="5.669" height="14"/><rect x="685.984" y="0" width="5.669" height="14"/><rect x="697.323" y="0" width="5.669" height="14"/><rect x="708.661" y="0" width="5.669" height="14"/></svg>
+  <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
+     study drives its cells with</p>
+  <div class="status">
+    <span>commit <b>0ddcf70</b></span>
+    <span>118 commits</span>
+    <span><b>96</b> modules</span>
+    <span><b>787</b> ground-truth tests in 39 files</span>
+    <span><b>14</b> claims withdrawn</span>
+  </div>
+</header>
+
+<main class="spine">
+
+<section>
+  <p class="eyebrow">The result</p>
+  <h2>ρ* is a theorem, not a measurement</h2>
+  <p>Every instrument has a ceiling. Express the distance from a tail threshold
+     to that ceiling in units of the tail’s own scale and you get one
+     dimensionless headroom, ρ, which puts volts, accelerations and percent on
+     the same axis. Expand the generalised-Pareto log-density about ξ = 0 and
+     the two score equations collapse, at ξ = 0, into a single condition on the
+     censored observable Z = min(Y, ρ), with no free parameters left in it.</p>
+
+  <div class="equation">E[Z²] = 2 · (E[Z])²</div>
+
+  <p>Both moments are elementary, so the critical headroom is the root of a
+     scalar equation. Below it the fitted tail index goes negative and the fit
+     asserts a finite upper endpoint for a quantity that has none.</p>
+
+  <figure>
+    <div class="plot"><svg viewBox="0 0 720 340" role="img" class="trace" aria-label="Critical headroom rho-star against tail index xi, on a logarithmic xi axis. It falls to a minimum of 4.2424 at xi 0.3243 and rises in both directions, diverging as xi approaches zero.">
+<line class="grid" x1="54" y1="296.0" x2="624" y2="296.0"/>
+<text class="tick" x="44" y="300.0" text-anchor="end">4</text>
+<line class="grid" x1="54" y1="227.5" x2="624" y2="227.5"/>
+<text class="tick" x="44" y="231.5" text-anchor="end">5</text>
+<line class="grid" x1="54" y1="159.0" x2="624" y2="159.0"/>
+<text class="tick" x="44" y="163.0" text-anchor="end">6</text>
+<line class="grid" x1="54" y1="90.5" x2="624" y2="90.5"/>
+<text class="tick" x="44" y="94.5" text-anchor="end">7</text>
+<line class="grid" x1="54" y1="22.0" x2="624" y2="22.0"/>
+<text class="tick" x="44" y="26.0" text-anchor="end">8</text>
+<line class="grid" x1="54.0" y1="22" x2="54.0" y2="296"/>
+<text class="tick" x="54.0" y="316" text-anchor="middle">0.01</text>
+<line class="grid" x1="301.7" y1="22" x2="301.7" y2="296"/>
+<text class="tick" x="301.7" y="316" text-anchor="middle">0.1</text>
+<line class="grid" x1="549.4" y1="22" x2="549.4" y2="296"/>
+<text class="tick" x="549.4" y="316" text-anchor="middle">1</text>
+<line class="grid" x1="624.0" y1="22" x2="624.0" y2="296"/>
+<text class="tick" x="624.0" y="316" text-anchor="middle">2</text>
+<line class="rail" x1="54" y1="279.40" x2="624" y2="279.40"/>
+<text class="rail-label" x="632" y="283.40">floor 4.2424</text>
+<polyline class="line" points="54.00,119.49 58.75,122.54 63.50,125.58 68.25,128.60 73.00,131.62 77.75,134.62 82.50,137.60 87.25,140.57 92.00,143.53 96.75,146.48 101.50,149.41 106.25,152.32 111.00,155.22 115.75,158.10 120.50,160.97 125.25,163.82 130.00,166.65 134.75,169.46 139.50,172.26 144.25,175.03 149.00,177.79 153.75,180.53 158.50,183.24 163.25,185.94 168.00,188.61 172.75,191.27 177.50,193.89 182.25,196.50 187.00,199.08 191.75,201.64 196.50,204.18 201.25,206.68 206.00,209.17 210.75,211.62 215.50,214.05 220.25,216.45 225.00,218.82 229.75,221.16 234.50,223.47 239.25,225.75 244.00,228.00 248.75,230.22 253.50,232.40 258.25,234.55 263.00,236.66 267.75,238.74 272.50,240.78 277.25,242.78 282.00,244.75 286.75,246.68 291.50,248.56 296.25,250.41 301.00,252.21 305.75,253.97 310.50,255.68 315.25,257.35 320.00,258.97 324.75,260.54 329.50,262.06 334.25,263.53 339.00,264.95 343.75,266.31 348.50,267.62 353.25,268.87 358.00,270.06 362.75,271.19 367.50,272.26 372.25,273.27 377.00,274.20 381.75,275.07 386.50,275.87 391.25,276.59 396.00,277.24 400.75,277.81 405.50,278.30 410.25,278.70 415.00,279.01 419.75,279.24 424.50,279.37 429.25,279.40 434.00,279.32 438.75,279.14 443.50,278.85 448.25,278.44 453.00,277.91 457.75,277.26 462.50,276.46 467.25,275.53 472.00,274.45 476.75,273.22 481.50,271.82 486.25,270.25 491.00,268.50 495.75,266.55 500.50,264.41 505.25,262.04 510.00,259.45 514.75,256.62 519.50,253.53 524.25,250.16 529.00,246.50 533.75,242.52 538.50,238.21 543.25,233.54 548.00,228.48 552.75,223.00 557.50,217.07 562.25,210.65 567.00,203.71 571.75,196.19 576.50,188.05 581.25,179.24 586.00,169.69 590.75,159.33 595.50,148.08 600.25,135.86 605.00,122.57 609.75,108.10 614.50,92.32 619.25,75.09 624.00,56.25"/>
+<circle class="dot" cx="428.28" cy="279.40" r="5"/>
+<text class="pt" x="428.28" y="305.40" text-anchor="middle">ξ* = 0.3243</text>
+<circle class="dot exact" cx="431.24" cy="279.38" r="4.5"/>
+<text class="pt" x="431.24" y="267.38" text-anchor="middle">3√2</text>
+<circle class="dot exact" cx="624.00" cy="56.25" r="4.5"/>
+<text class="pt" x="624.00" y="44.25" text-anchor="middle">15/2</text>
+<text class="axis" x="339" y="334" text-anchor="middle">tail index ξ (log scale)</text>
+<text class="axis" transform="translate(14,159) rotate(-90)" text-anchor="middle">ρ*</text>
+<g class="cross" aria-hidden="true"><line x1="0" y1="22" x2="0" y2="296"/><circle r="4"/></g>
+<rect class="hit" x="54" y="22" width="570" height="274" data-ml="54" data-pw="570" data-mt="22" data-ph="274"/>
+</svg>
+      <div class="readout" id="readout">
+        Hover the curve to read ρ* at any ξ.</div>
+    </div>
+    <figcaption>ρ* against ξ, computed at build time by
+      <code>dynamic_range_theory.critical_headroom</code>. It is not flat. It has
+      an interior minimum of <strong>4.2424</strong> at
+      ξ = <strong>0.3243</strong>, takes the exact algebraic values
+      3√2 at ξ = 1/3 and 15/2 at ξ = 2, and <em>diverges</em> as ξ → 0. Near-
+      exponential tails are the expensive case for instrument design, not the
+      cheap one.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">The scope</p>
+  <h2>Whose failure is this, the instrument’s or the estimator’s?</h2>
+  <div class="two">
+    <div>
+      <p>The tempting claim is that any tail estimator seen through a
+         finite-range instrument breaks this way. It is not true, and the true
+         version is stronger.</p>
+      <p><strong>Hill can never report a bounded tail.</strong> It is a mean of
+         log-ratios of order statistics, so it is non-negative by construction.
+         Under a hard ceiling it returns exactly zero and calls the tail
+         exponential. It is blind to the symptom, not immune to the cause.</p>
+      <p><strong>Pickands is exactly invariant</strong> to any ceiling above the
+         threshold, bit for bit, because its three inputs are ranks k, 2k and 4k
+         and the largest of them <em>is</em> the threshold. It is immune because
+         it discards precisely the data the ceiling corrupts. That is avoidance,
+         not correction.</p>
+      <p>So the defensible claim is: <strong>maximum-likelihood estimation
+         breaks this way, and estimators that structurally discard the corrupted
+         region hide the problem rather than solve it.</strong> Stating it that
+         way pre-empts the obvious objection, because it explains why reaching
+         for Pickands is not a fix.</p>
+    </div>
+    <div class="aside">
+      <p><b>Measured, not argued.</b> The naive generalised-Pareto MLE is the
+         worst of four estimators at every headroom below 10, and it degrades
+         fastest: 34× between ρ = 30 and ρ = 2, against 6.5× for Hill and 1.0×
+         for Pickands.</p>
+      <p><b>Reported against interest.</b> Hill’s excellent error under heavy
+         saturation is two biases cancelling at particular parameters. It is in
+         the results and it is explicitly not a recommendation.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The ledger</p>
+  <h2>14 claims this project made and then withdrew</h2>
+  <p>Every claim this project made and then withdrew. Ordered newest first. `caught_by` is the mechanism that found it, not the person; the point of the ledger is that the mechanisms are reusable.</p>
+  <div class="ledger-wrap">
+    <table>
+      <tbody>
+          <tr>
+            <td class="num">2026-09-01</td>
+            <td>
+              <p class="claim">Every reported “× step” excitation gain.</p>
+              <p class="repl">Inflated by up to 45%. The residual projector was a plain reduced QR of a rank-deficient Jacobian, so it removed directions the fit could never absorb. It hit only the constant-current step, which is the baseline every gain is divided by.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Rebuilding the estimator variance from scratch by a second route and demanding exact agreement, not correlation.</p>
+            </td>
+            <td><span class="tag t-inflated">inflated</span>
+                <code class="where">src/core/battery/excitation.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-09-01</td>
+            <td>
+              <p class="claim">σ_u = ξ·u, the asymptotic shortcut that would have made the futures screen a one-line formula.</p>
+              <p class="repl">Off by 1.03× to 3.27× at the thresholds anyone actually picks, worst for light tails. The screen is calibrated by simulation instead.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Measuring the approximation against four million draws before relying on it.</p>
+            </td>
+            <td><span class="tag t-rejected">rejected</span>
+                <code class="where">src/core/evt/futures_limits.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-31</td>
+            <td>
+              <p class="claim">A fast PRBS is 31× more efficient than a current step.</p>
+              <p class="repl">About 3× at the design corner. The metric divided by the size of the diffusion response, scoring the fraction that survived the fit rather than the amount. It was wrong by up to 42× in both directions, so it reordered the designs.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Comparing the metric against the exact least-squares variance it was standing in for.</p>
+            </td>
+            <td><span class="tag t-retracted">retracted</span>
+                <code class="where">src/core/battery/excitation.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-31</td>
+            <td>
+              <p class="claim">The critical headroom ρ* ≈ 4.5 is a constant of the problem.</p>
+              <p class="repl">ρ* is the root of E[Z²] = 2(E[Z])². It has an interior minimum of 4.2424 at ξ = 0.3243 and diverges as ξ → 0. The apparent constancy was local flatness around that minimum.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Deriving the quantity instead of measuring it on a grid that happened to bracket its minimum.</p>
+            </td>
+            <td><span class="tag t-superseded">superseded</span>
+                <code class="where">src/core/evt/dynamic_range_theory.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-31</td>
+            <td>
+              <p class="claim">A fast bit rate is the right excitation.</p>
+              <p class="repl">The optimum bit is slow, 0.16 s to 0.64 s. A Warburg response grows as √t, so a fast drive barely excites one, and a large retained fraction of almost nothing scored highly.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 The same variance comparison that retracted the 31×.</p>
+            </td>
+            <td><span class="tag t-inverted">inverted</span>
+                <code class="where">src/core/battery/excitation.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-31</td>
+            <td>
+              <p class="claim">RHO_DEGENERATE = 3.8 is the headroom below which the fit degenerates.</p>
+              <p class="repl">3.8 is the fold, where an interior optimum is born. The boundary is where it overtakes the uniform, 0.09 to 0.35 higher. Corrected to 4.15, and the transition is first order.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Noticing that the ξ → −1 limit is Uniform[0, ρ], whose expected log-likelihood is exactly −log ρ and is attained.</p>
+            </td>
+            <td><span class="tag t-corrected">corrected</span>
+                <code class="where">src/core/evt/dynamic_range.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-31</td>
+            <td>
+              <p class="claim">Fisher information should reproduce ρ*.</p>
+              <p class="repl">It does not. ρ* is a misspecification-bias quantity from a KL projection; Fisher information is a variance quantity under correct specification. ρ* buys an unbiased sign and about half the information.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Testing a conjecture that would have been convenient rather than assuming it.</p>
+            </td>
+            <td><span class="tag t-falsified">falsified</span>
+                <code class="where">src/core/evt/dynamic_range_theory.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-28</td>
+            <td>
+              <p class="claim">Three domains, three confirmations.</p>
+              <p class="repl">Two legs and a gap. The financial mapping fails: there are 63 daily losses of 20% or worse across 36 US equity series, every one after circuit breakers were adopted. A market-wide breaker halts on an index trigger; it does not truncate a single name.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Checking whether the claimed ceiling actually appears in the data it is supposed to censor.</p>
+            </td>
+            <td><span class="tag t-retracted">retracted</span>
+                <code class="where">src/core/evt/dynamic_range.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-28</td>
+            <td>
+              <p class="claim">If the two channels are independent, the second one adds nothing.</p>
+              <p class="repl">Exactly backwards. χ measures the dependence of the noise, and a detector wants independent noise and a common-mode anomaly. Low χ is good news for the second channel.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Simulating the detector rather than reasoning about the correlation.</p>
+            </td>
+            <td><span class="tag t-inverted">inverted</span>
+                <code class="where">src/core/battery/channel_value.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-28</td>
+            <td>
+              <p class="claim">The corner-sweep slope test distinguishes physics from coupling.</p>
+              <p class="repl">It returned “PHYSICS — the tail is invariant” on simulated droop-truth data. Droop leakage is non-monotone in the corner, so a line through a curve with an interior maximum has slope zero.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Running the diagnostic against data whose truth was known by construction.</p>
+            </td>
+            <td><span class="tag t-falsified">falsified</span>
+                <code class="where">src/core/battery/confound.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-28</td>
+            <td>
+              <p class="claim">A matched passive RC network is the null control.</p>
+              <p class="repl">Not physically buildable. Matching waveform, source impedance and a relaxation-free dielectric at once needs about 245 µF under 20 kΩ. Everything that reaches it is electrolytic or an EDLC, and an EDLC produces the exact √t signature the control exists to exclude.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Costing the control in components instead of in equations.</p>
+            </td>
+            <td><span class="tag t-retracted">retracted</span>
+                <code class="where">docs/CONFOUND_METHOD_NOTE.md</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-28</td>
+            <td>
+              <p class="claim">Jackknife+ raises the certifiable coverage ceiling.</p>
+              <p class="repl">Its 1 − 2α guarantee is weaker than split conformal&#x27;s at every n in range: 84.6% against 85.7% at n = 12. What it buys is a finite band where split returns an infinite one.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Reading the guarantee rather than the reputation.</p>
+            </td>
+            <td><span class="tag t-retracted">retracted</span>
+                <code class="where">src/core/evt/resampling_conformal.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-18</td>
+            <td>
+              <p class="claim">The rig records 2.2 hours of data at 10 Hz.</p>
+              <p class="repl">About 38 hours. The DS3231 timestamps whole seconds, so ten rows share a timestamp at 10 Hz and the burst ratio is attenuated toward “no flood”.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Grepping the dashboard after correcting the finding elsewhere. The panel was still displaying the old number.</p>
+            </td>
+            <td><span class="tag t-corrected">corrected</span>
+                <code class="where">src/dashboard/live_panels.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-08-11</td>
+            <td>
+              <p class="claim">The drift-lag bias–variance optimum is near a window of 301.</p>
+              <p class="repl">301 is the minimum-exceedance constraint floor, not an optimum. The unconstrained optimum is 54 / 50 / 50 / 74.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 A dashboard sweep that found the retracted claim still on screen weeks after it was withdrawn in the code.</p>
+            </td>
+            <td><span class="tag t-withdrawn">withdrawn</span>
+                <code class="where">src/dashboard/diagnostics_panels.py</code></td>
+          </tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">On the record</p>
+  <h2>Decisions fixed before the hardware exists</h2>
+  <p>No cells have been measured yet. Everything below is validated against
+     simulated traces with known ground truth, which is exactly why it can be
+     settled now: when real cells arrive there should be no design deliberation
+     left, only execution.</p>
+
+  <dl class="decisions">
+    <dt>Excitation: a whole-period maximum-length sequence</dt>
+    <dd><span class="verdict">The case is dominance, not magnitude.</span>
+      Against the charge-neutral bipolar square it wins in every feasible design
+      tested. Against a random binary sequence it wins in roughly a third, at a
+      median ratio of 0.99 — that is, it does not win. It is chosen because it is
+      <em>equally</em> efficient while being exactly balanced rather than balanced
+      by luck, and because it deletes the seed from the design. That argument
+      never used the retracted 31×, and it does not use the corrected 3× either.
+      <code>excitation.waveform_justification</code></dd>
+
+    <dt>Register length: the shortest that resolves the corner</dt>
+    <dd>At a matched record length, which is matched bench hours, the short
+      register with a long bit beats the long register with a short bit in 63 of
+      65 matched pairs, median 1.75× and up to 6.2×. A Warburg response grows as
+      √t, so the bit duration is the lever; the register length only repeats an
+      excitation already chosen. The recorded reasoning picked the register for
+      spectral flatness and treated it as free. It is the dominant cost.
+      <code>excitation.feasible_designs</code></dd>
+
+    <dt>Cohort: reach the 22-cell coverage step</dt>
+    <dd>Distribution-free 90% coverage is a step, not a slope: below 22 cells no
+      method certifies it at any effect size or budget, so 16 and 20 buy nothing.
+      Priced with the chosen design, 22 cells costs 49.7 bench hours at a 0.07 Hz
+      coupling corner, inside a 60-hour budget. The worry that 22 was out of
+      reach was an artefact of pricing the cohort at a register length picked for
+      spectral flatness. Three bits off the register is worth ten cells. Below
+      roughly 0.05 Hz the step is unreachable and the study should certify the
+      level it can and say so.
+      <code>analysis_plan.coverage_step_decision</code></dd>
+
+    <dt>Futures third leg: a search small enough to finish</dt>
+    <dd>Only ρ between about 3 and 10 carries information. Above 10 an exchange
+      limit is never exercised and no amount of history helps. Inverted into
+      something you can act on before requesting any data: <strong>a fixed daily
+      price limit worth 3.3 to 7.5 daily standard deviations</strong>. Two of the
+      three filters are free and run on public documents.
+      <code>futures_limits.contract_shortlist</code></dd>
+  </dl>
+</section>
+
+<section>
+  <p class="eyebrow">Standing limitations</p>
+  <h2>What this cannot currently settle</h2>
+  <p><strong>Selection bias is real and currently unfalsifiable.</strong> Every
+     cell shares one provenance, so no contrast exists. Cells salvaged from a
+     failed pack over-represent neighbour-proximity stress and are survivors
+     of it.</p>
+  <p><strong>The cross-domain claim is two legs and a gap, not three.</strong>
+     A bearing clamp and a battery rail are real finite-range instruments. The
+     equity universe is not: a rule-free ceiling detector finds one in 1 of 80
+     series, fewer than chance would give.</p>
+  <p><strong>The channel design question is not answerable from healthy cells
+     at any sample size.</strong> The noise dependence is measurable on healthy
+     cells; the anomaly’s common-mode fraction is a property of the fault. That
+     is a data-collection requirement, not an analysis choice.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Provenance</p>
+  <h2>Where this lives, and why here</h2>
+  <p>This page is generated by <code>tools/site/build_site.py</code> and rebuilt
+     on every push. The commit, the module and test counts, the document list and
+     every point on the curve above are read or computed at build time. None of
+     them is typed into the page, so a page that has drifted from the repository
+     cannot render.</p>
+  <p>The rule has a history. A hand-written “what is not claimed” paragraph on
+     the project’s dashboard once stayed on screen for weeks after the thing it
+     disclaimed had been ingested. On a project about measurement honesty, a
+     stale disclaimer is the worst available bug.</p>
+  <p class="mono" style="font-size:.8125rem;color:var(--muted)">
+     28 statistical modules ·
+     8 battery modules ·
+     13 method documents ·
+     head 0ddcf70 “Grep the docs too: two retracted claims were still on display” (2026-08-31)</p>
+</section>
+
+<footer>
+  <p>Simulation-validated design work. No cell has been measured. Every number
+     on this page is reproducible from the repository at commit
+     <code>0ddcf70</code>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var svg = document.querySelector("svg.trace");
+  if (!svg) return;
+  var hit = svg.querySelector(".hit"), cross = svg.querySelector(".cross"),
+      line = cross.querySelector("line"), dot = cross.querySelector("circle"),
+      poly = svg.querySelector(".line"), out = document.getElementById("readout");
+  var pts = poly.getAttribute("points").trim().split(/\s+/).map(function (p) {
+    var xy = p.split(","); return [parseFloat(xy[0]), parseFloat(xy[1])];
+  });
+  var ml = +hit.dataset.ml, pw = +hit.dataset.pw,
+      mt = +hit.dataset.mt, ph = +hit.dataset.ph;
+  var x0 = -2, x1 = Math.log10(2), y0 = 4, y1 = 8;
+
+  function move(ev) {
+    var r = svg.getBoundingClientRect();
+    var sx = (ev.clientX - r.left) * (svg.viewBox.baseVal.width / r.width);
+    var best = pts[0], bd = Infinity;
+    for (var i = 0; i < pts.length; i++) {
+      var d = Math.abs(pts[i][0] - sx);
+      if (d < bd) { bd = d; best = pts[i]; }
+    }
+    cross.style.opacity = 1;
+    line.setAttribute("x1", best[0]); line.setAttribute("x2", best[0]);
+    dot.setAttribute("cx", best[0]); dot.setAttribute("cy", best[1]);
+    var xi = Math.pow(10, x0 + (best[0] - ml) / pw * (x1 - x0));
+    var rho = y0 + (1 - (best[1] - mt) / ph) * (y1 - y0);
+    out.innerHTML = "\u03be = <b>" + xi.toFixed(4) +
+                    "</b>\u2003\u03c1* = <b>" + rho.toFixed(4) + "</b>";
+  }
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerleave", function () {
+    cross.style.opacity = 0;
+    out.textContent = "Hover the curve to read \u03c1* at any \u03be.";
+  });
+})();
+</script>
+
+</body>
+</html>

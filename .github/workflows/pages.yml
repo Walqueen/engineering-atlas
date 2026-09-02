@@ -1,0 +1,68 @@
+name: Deploy page
+
+# The page is a single static file, generated in the research repository and
+# committed here. This workflow only publishes it; it does not build it. That
+# split is deliberate: building here would need the research source, which is
+# private and co-authored, and copying source across a repository boundary is
+# exactly how two copies of a finding start to disagree.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deploy midway; queue instead. A half-applied deployment of a
+# page whose whole subject is measurement honesty is worse than a slow one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The page must be a complete document, not a fragment
+        run: |
+          test -f index.html || { echo "index.html is missing"; exit 1; }
+          grep -qi '^<!doctype html>' index.html \
+            || { echo "index.html is not a standalone document -- rebuild with --standalone"; exit 1; }
+          grep -q '</html>' index.html \
+            || { echo "index.html is truncated"; exit 1; }
+      - name: Every theme token must be defined in all three theme states
+        # A colour whose only definition sits behind a media query never applies
+        # in the un-stamped default state, and the page then renders one theme's
+        # text on the other theme's ground.
+        run: |
+          for tok in --ground --ink --trace --rail --retract; do
+            n=$(grep -c -- "$tok:" index.html || true)
+            if [ "$n" -lt 3 ]; then
+              echo "token $tok defined $n times, expected 3 (root, media, [data-theme])"
+              exit 1
+            fi
+          done
+      - name: The status line must carry a real commit, not a placeholder
+        run: |
+          grep -q 'commit <b>' index.html || { echo "no commit in the status line"; exit 1; }
+          grep -q 'commit <b>unknown</b>' index.html \
+            && { echo "the page was built outside a git tree"; exit 1; }
+          exit 0
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
