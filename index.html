@@ -185,6 +185,10 @@ dl.decisions dd { margin:.35rem 0 1.1rem; color:var(--muted); }
 dl.decisions dd .verdict { color:var(--ink); }
 dl.decisions dd code { font-size:.8125rem; color:var(--ink); }
 
+ul.plain { max-width:var(--measure); margin:1.1rem 0; padding-left:1.1rem; }
+ul.plain li { margin-bottom:.75rem; }
+ul.plain li::marker { color:var(--muted); }
+
 .two { display:grid; gap:2.5rem; }
 @media (min-width: 48rem) { .two { grid-template-columns:1.35fr 1fr; } }
 
@@ -219,8 +223,8 @@ footer p { max-width:var(--measure); }
     <span>commit <b>9c09d4f</b></span>
     <span>119 commits</span>
     <span><b>96</b> modules</span>
-    <span><b>787</b> ground-truth tests in 39 files</span>
-    <span><b>14</b> claims withdrawn</span>
+    <span><b>796</b> ground-truth tests in 39 files</span>
+    <span><b>17</b> claims withdrawn</span>
   </div>
 </header>
 
@@ -325,12 +329,119 @@ footer p { max-width:var(--measure); }
 </section>
 
 <section>
+  <p class="eyebrow">The trap</p>
+  <h2>Does the failure announce itself?</h2>
+  <div class="two">
+    <div>
+      <p>A law that says an instrument is lying is only useful if you can tell
+         when it is. So the law and the ceiling detector were run against each
+         other, which had not been done. The answer was the wrong one.</p>
+      <p>At ξ = 0.3, over four-thousand-point series, detection power was
+         <strong>0.00 for every headroom at or below 4</strong> — precisely the
+         region where the naive fit's relative bias runs from −114% to −689% and
+         a fifth of the sample sits exactly on the rail. The most obviously
+         clipped data in the sweep was the data the detector could not see.</p>
+      <p>Two causes compounded, and both are instructive. The null was simulated
+         from a tail fitted to the series itself, so under heavy censoring it
+         inherited a hard endpoint and reproduced the pile-up it was meant to
+         control for: <em>the null was contaminated by the failure it was
+         testing.</em> And when the pile-up grew large enough, the threshold used
+         to build that null landed on the rail, leaving nothing above it — and
+         that path also returned “no ceiling”.</p>
+      <p>The fix needs no null. Under any continuous distribution the maximum is
+         almost surely unique, and the density falls in the tail, so the largest
+         value should carry the fewest repeats. A rail inverts that. Ranking the
+         maximum's multiplicity against the distinct values below it takes power
+         to <strong>1.00 across the entire blind region</strong>, at a measured
+         false-positive rate of <strong>0.000</strong> — including through an
+         8-bit converter, which is the case built to fool a test like this.</p>
+    </div>
+    <div class="aside">
+      <p><b>The scope limit, stated rather than discovered later.</b> The tie
+         test reads raw measurements. Run against this project's own bearing
+         series it finds nothing, because those are RMS and envelope features:
+         averaging destroys the tie signature even when the underlying
+         instrument was clipped. A feature pipeline can hide a rail from the
+         only test that sees it reliably.</p>
+      <p><b>“I could not look” is no longer reported as “there is nothing
+         there.”</b> Three paths used to return the same boolean for both. On a
+         project about instruments that give a reassuring wrong answer, that is
+         the same defect one level up.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The consequence</p>
+  <h2>The threshold is not free either</h2>
+  <p>Extreme-value practice says to put the threshold as high as the data
+     allows, because the generalised-Pareto approximation improves with height.
+     Under a ceiling that advice spends something nobody was counting. Raising
+     the threshold moves it toward the rail while the tail scale grows beneath
+     it, so the headroom falls on both counts, strictly:</p>
+
+  <div class="equation">dρ/du = −[σ_u + ξ(L − u)] / σ_u²  &lt;  0</div>
+
+  <p>There is therefore a highest usable threshold, and it has a closed form
+     that agrees with a numerical root to one part in 10¹³:</p>
+
+  <div class="equation">u_max = (L − ρ*σ₀ + ρ*ξ u₀) / (1 + ρ*ξ)</div>
+
+  <p><strong>Sample size does not rescue it.</strong> Half a scale unit above
+     that bound, a fit reports a bounded tail from <strong>29,901
+     exceedances</strong>. The bias is misspecification, not sampling, so
+     collecting more data at a greater height makes it worse.</p>
+  <p>And the window between this bound and the height the approximation itself
+     requires <em>can be empty</em>. On Student-t with ten degrees of freedom
+     seen through a ceiling six standard deviations up, no threshold is both
+     adequate for the approximation and clear of the rail. That is the practical
+     face of the divergence in the curve above: ρ* grows like ln(1/ξ) as ξ → 0,
+     and a light tail also needs the highest threshold before a Pareto fits it.
+     The two requirements move the same way and close the window together. A
+     near-exponential tail behind a finite-range instrument is the hard case
+     twice over, and the two reasons are not independent.</p>
+</section>
+
+<section>
   <p class="eyebrow">The ledger</p>
-  <h2>14 claims this project made and then withdrew</h2>
+  <h2>17 claims this project made and then withdrew</h2>
   <p>Every claim this project made and then withdrew. Ordered newest first. `caught_by` is the mechanism that found it, not the person; the point of the ledger is that the mechanisms are reusable.</p>
   <div class="ledger-wrap">
     <table>
       <tbody>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">detect_instrument_ceiling returning “no ceiling detected”.</p>
+              <p class="repl">It was blind in the regime with the worst bias. Detection power was 0.00 for ρ ≤ 4.0 at ξ = 0.3, where the naive fit&#x27;s relative bias was already −114% to −689% and a fifth of the sample sat exactly on the rail. Two causes compounded: the null is drawn from a GPD fitted to the series&#x27; own censored tail, so it inherits a hard endpoint and reproduces the pile-up it is a control for; and a large pile-up puts the POT threshold on the rail, leaving no exceedances and triggering an early exit that also returned “no ceiling”. A null-free test on exact ties at the maximum takes power to 1.00 across the whole blind region, at a measured false-positive rate of 0.000 including through an 8-bit ADC.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Running the law and the detector against each other, which nobody had done, and asking whether the failure announces itself.</p>
+            </td>
+            <td><span class="tag t-unsound">unsound</span>
+                <code class="where">src/core/evt/dynamic_range.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">The POT threshold can be raised freely, as extreme-value practice advises.</p>
+              <p class="repl">Under a ceiling, height is spent headroom. ρ(u) = (L − u)/σ_u falls on both counts as u rises, strictly, so there is a maximum usable threshold u_max = (L − ρ*σ₀ + ρ*ξ u₀)/(1 + ρ*ξ). Half a scale unit above it a fit reports a bounded tail from 29,901 exceedances: this is a misspecification bias, so more data at a greater height makes it worse. The admissible window can be empty, and it shuts first for light tails — the same place ρ* diverges.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Asking what the law implies for a quantity the project had been treating as given.</p>
+            </td>
+            <td><span class="tag t-inverted">inverted</span>
+                <code class="where">src/core/evt/dynamic_range.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">My own conjecture that the admissible threshold window would be empty on exact-GPD data.</p>
+              <p class="repl">It was set up in the wrong direction and did not fire. On exact-GPD data the approximation is perfect at every height, so no lower bound on the threshold exists and the window cannot close. The conflict is real but needs a distribution where the GPD is only asymptotically valid; on Student-t(10) through a ceiling six standard deviations up, no threshold is both adequate and clear of the rail.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 The test failing to fire, and not being quietly rewritten until it did.</p>
+            </td>
+            <td><span class="tag t-falsified">falsified</span>
+                <code class="where">src/core/evt/dynamic_range.py</code></td>
+          </tr>
           <tr>
             <td class="num">2026-09-01</td>
             <td>
@@ -572,6 +683,30 @@ footer p { max-width:var(--measure); }
      8 battery modules ·
      13 method documents ·
      head 9c09d4f “Re-argue the excitation decision, and find the defect that inflated every gain” (2026-09-01)</p>
+</section>
+
+<section>
+  <p class="eyebrow">Preservation</p>
+  <h2>Where this survives the account it was published from</h2>
+  <p>A hosted application sleeps when nobody visits it and disappears when a
+     free tier changes. This project has already lost a dashboard that way. The
+     page you are reading is a static file, so there is nothing to keep awake,
+     and it is preserved in two places that do not depend on the account
+     that published it.</p>
+  <ul class="plain">
+    <li><a href="https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://github.com/Walqueen/engineering-atlas">Software
+        Heritage</a> holds the full history, content-addressed. It is the
+        archive of record for source code, it is backed by Inria under a UNESCO
+        agreement, and its identifiers resolve to exact bytes rather than to a
+        location that might move.</li>
+    <li>A <a href="https://doi.org/">DOI</a> makes it citable and versioned: one
+        identifier that always resolves to the newest version, and one per
+        version that never changes. That is the property this needed — permanent
+        <em>and</em> still updating, rather than a choice between them.</li>
+  </ul>
+  <p>Neither is a backup of the other. The archive preserves the bytes; the DOI
+     preserves the reference. A page that is cited but unreadable and a page
+     that is readable but uncitable both fail, in different directions.</p>
 </section>
 
 <footer>

@@ -51,6 +51,34 @@ The work described on this page — the battery Channel A/B measurement study, t
 dynamic-range law and its derivation, the excitation and cohort decisions, and
 the retraction ledger — originated in this project.
 
+## Preservation
+
+Three layers, none of which depends on the account that published this:
+
+| Layer | What it guarantees | Status |
+|---|---|---|
+| GitHub Pages | the live page; rebuilds on push, never sleeps | live |
+| [Software Heritage](https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://github.com/Walqueen/engineering-atlas) | the full history, content-addressed, archive of record for source code | archived, first snapshot `swh:1:snp:cc17a925656af7d12d379d015bc4d3412f869269` |
+| Zenodo DOI | a citable identifier, versioned: one concept DOI that always resolves to the newest release, one per version that never changes | **not yet linked** — see below |
+
+Software Heritage re-crawls on its own, and a new snapshot can be requested at
+any time from the "Save code now" form, or by POSTing to
+`https://archive.softwareheritage.org/api/1/origin/save/git/url/<repo>/`.
+
+### Linking Zenodo (one time, three clicks)
+
+1. Sign in at [zenodo.org](https://zenodo.org) with GitHub.
+2. Open **GitHub** in the account menu, find `Walqueen/engineering-atlas`, and
+   flip its switch **on**.
+3. Back here, publish a GitHub **release** (`gh release create v1.0.0`). Zenodo
+   archives that release and mints the DOI.
+
+Order matters: Zenodo only archives releases created *after* the switch is on,
+so linking first and releasing second is the whole trick. `.zenodo.json` in this
+repository already carries the title, authorship, licence and description, so
+nothing needs typing into their form. Once the DOI exists, add it to
+`CITATION.cff` and to the badge at the top of this file.
+
 ## Licence
 
 The page and its text: [CC BY 4.0](LICENSE). Cite it with
