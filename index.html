@@ -230,11 +230,11 @@ footer p { max-width:var(--measure); }
   <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
      study drives its cells with</p>
   <div class="status">
-    <span>commit <b>378ccb9</b></span>
-    <span>123 commits</span>
+    <span>commit <b>e2f8938</b></span>
+    <span>124 commits</span>
     <span><b>96</b> modules</span>
     <span><b>803</b> ground-truth tests in 39 files</span>
-    <span><b>18</b> claims withdrawn</span>
+    <span><b>20</b> claims withdrawn</span>
   </div>
 </header>
 
@@ -475,11 +475,33 @@ footer p { max-width:var(--measure); }
 
 <section>
   <p class="eyebrow">The ledger</p>
-  <h2>18 claims this project made and then withdrew</h2>
-  <p>Ordered newest first. Each entry names the mechanism that caught it rather than the person, because the mechanisms are the reusable part. Nothing here was quietly overwritten; a retraction that leaves no trace is indistinguishable from never having made the claim.</p>
+  <h2>20 claims this project made and then withdrew</h2>
+  <p>Ordered newest first. Each entry names the mechanism that caught it rather than the person, because the mechanisms are the reusable part. Hardware corrections are recorded here on the same terms as statistical ones — a bench result withdrawn and a claim withdrawn are the same act, and separating them would let one look more disciplined than the other. Nothing here was quietly overwritten; a retraction that leaves no trace is indistinguishable from never having made the claim.</p>
   <div class="ledger-wrap">
     <table>
       <tbody>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">Channel B&#x27;s high corner frequency, at its designed 19.36 kHz.</p>
+              <p class="repl">9.66 kHz, a 50.1% shift, caused by loading between cascaded RC stages and found only because the stage was simulated rather than hand-calculated. It gates the noise bandwidth, not the droop/diffusion confound — that work is parameterised on the LOW corner, so nothing downstream needed rerunning. White noise scales by √(9660/19360) = 0.706, so the instrument is 29% quieter than designed and the margin moves the safe way. The open risk is the LOW corner: same cascaded stages, not yet simulated for the same artifact, and it is the one whose false-positive rate reaches 0.92 at 1% error.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 Simulating a stage instead of hand-calculating it — then, separately, checking which corner the statistics actually consume before rerunning anything.</p>
+            </td>
+            <td><span class="tag t-corrected">corrected</span>
+                <code class="where">src/core/battery/analog_frontend.py</code></td>
+          </tr>
+          <tr>
+            <td class="num">2026-09-02</td>
+            <td>
+              <p class="claim">Bench Test 1&#x27;s 0.4 V discrepancy.</p>
+              <p class="repl">Declared invalid and superseded at Gate 1.8 rather than quietly kept. Recorded here, timestamped, on the same terms as the statistical retractions: a bench result withdrawn and a claim withdrawn are the same act, and documenting them differently would let one look more disciplined than the other.</p>
+              <p class="caught"><span class="lbl">Caught by</span>
+                 A gate structure that requires a discrepancy to be resolved on the record before the gate can pass.</p>
+            </td>
+            <td><span class="tag t-superseded">superseded</span>
+                <code class="where">src/dashboard/app.py</code></td>
+          </tr>
           <tr>
             <td class="num">2026-09-02</td>
             <td>
@@ -764,7 +786,7 @@ footer p { max-width:var(--measure); }
      28 statistical modules ·
      8 battery modules ·
      14 method documents ·
-     head 378ccb9 “Regenerate the estimator table from the function the text cites” (2026-09-01)</p>
+     head e2f8938 “The statistics and the hardware are one project; wire the join” (2026-09-01)</p>
 </section>
 
 <section>
@@ -794,7 +816,7 @@ footer p { max-width:var(--measure); }
 <footer>
   <p>Simulation-validated design work. No cell has been measured. Every number
      on this page is reproducible from the repository at commit
-     <code>378ccb9</code>.</p>
+     <code>e2f8938</code>.</p>
 </footer>
 
 </main>
