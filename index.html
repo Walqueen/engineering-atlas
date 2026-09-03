@@ -153,6 +153,14 @@ figcaption { font-size:.9375rem; color:var(--muted); max-width:var(--measure);
   margin:1.75rem 0; max-width:var(--measure); overflow-x:auto;
 }
 
+/* ---- the agreement badge ---- */
+.agree { border-left:3px solid var(--rail); padding:.55rem .9rem;
+  background:var(--sunk); margin:1rem 0 0; font-size:.9375rem; }
+.agree.ok { border-left-color:var(--trace); }
+.agree.pending { border-left-color:var(--retract); }
+.agree .mono { display:block; margin-top:.3rem; font-size:.8125rem;
+  color:var(--muted); letter-spacing:.01em; }
+
 /* ---- the four-state output ---- */
 table.matrix { min-width:0; width:100%; max-width:var(--measure);
                margin:1.5rem 0 1.25rem; border-collapse:collapse; }
@@ -252,7 +260,7 @@ footer p { max-width:var(--measure); }
 
 <header class="mast">
   <p class="eyebrow" style="position:static;width:auto;text-align:left">
-    Engineering ATLAS · battery Channel A/B · built 2026-09-02</p>
+    Engineering ATLAS · battery Channel A/B · built 2026-09-03</p>
   <h1>An instrument short<br>of range does not<br>say “I don’t know”.</h1>
   <p class="lede">It says <b>the quantity is bounded</b>. That is the most
      reassuring wrong answer available, and there is a number below which every
@@ -261,10 +269,10 @@ footer p { max-width:var(--measure); }
   <p class="mseq-cap">one period of the 127-bit maximum-length sequence this
      study drives its cells with</p>
   <div class="status">
-    <span>commit <b>bdef4bd</b></span>
-    <span>132 commits</span>
-    <span><b>96</b> modules</span>
-    <span><b>806</b> ground-truth tests in 39 files</span>
+    <span>commit <b>1977682</b></span>
+    <span>137 commits</span>
+    <span><b>100</b> modules</span>
+    <span><b>855</b> ground-truth tests in 43 files</span>
     <span><b>21</b> claims withdrawn</span>
   </div>
 </header>
@@ -310,6 +318,57 @@ footer p { max-width:var(--measure); }
      against ρ* is not a diagnostic that sits beside this table — it is the
      column you land in. That is where the statistics stop being a result and
      become an instruction.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Live</p>
+  <h2>The instrument checking its own promise</h2>
+  <p>The tail model is fitted <em>once</em>, offline, and frozen into four
+     numbers that go into the firmware. What runs on the device is not a fit —
+     it is the two regulatory audits, scoring each new pulse against a promise
+     made in advance. That distinction is the whole design: a model that
+     continuously refits itself cannot fail its own calibration test, it can
+     only move the goalposts.</p>
+  <p>So the live view is not statistics being computed in front of you. It is a
+     verdict being continuously re-checked against a commitment that was made
+     before the data arrived, and that is a stronger thing to be able to
+     watch.</p>
+
+  <h3>Watching is exactly what makes the classical tests invalid</h3>
+  <p>A screen that re-runs Kupiec's test after every pulse and alarms at
+     <span class="mono">p&nbsp;&lt;&nbsp;0.05</span> is not a live version of
+     Kupiec's test. It is continuous monitoring, and a p-value read at a moment
+     chosen by the data does not hold its level — the same defect this project
+     documents elsewhere, arrived at from the hardware side.</p>
+  <p>Both live tests are therefore <strong>e-processes</strong>: non-negative
+     martingales under the null, read through Ville's inequality, one
+     multiply–add per pulse. Coverage asks Kupiec's question; clustering asks
+     Christoffersen's, betting only on pulses whose predecessor violated — a
+     predictable selection, so still a martingale. The alarm reads the running
+     maximum, so evidence once banked is not un-banked, and the level holds
+     however often it is looked at. The negative control is in the suite: the
+     peeked classical test rejects true nulls far above its nominal rate on the
+     same streams.</p>
+
+  <h3>How long before it can tell you anything</h3>
+  <p>An alarm needs about
+     <span class="mono">log(2/α)&nbsp;/&nbsp;log(1&nbsp;+&nbsp;λ(1−p₀))</span>
+     ≈ <strong>9 winning bets</strong>, and the clustering test only
+     bets after a violation, so it needs on the order of
+     <strong>3,377 pulses — about 7 minutes</strong> at the
+     instrument's 8&nbsp;Hz. That number is set by the violation rate
+     (p₀&nbsp;=&nbsp;0.0027), not by the test, and no amount of statistical
+     work shortens it. It is published here because a demonstration that
+     quietly runs faster than the hardware would is not a demonstration.</p>
+
+  <h3>The number on screen is the number in the firmware</h3>
+  <p>The device-side arithmetic exists twice — once in Python, once in C++ —
+     and the two are compared over a recorded vector set on every check. The
+     project's argument is that an instrument should be able to say when it is
+     not entitled to its own reading; the same standard applied to its tooling
+     means the host and the firmware must be shown to agree, not assumed
+     to.</p>
+  <p class="agree ok"><strong>C++ and Python agree.</strong> Both implementations were driven with the same 4,005 pulses and every output matched to 5.23e-15 relative — including the rendered wire line, compared byte for byte. <span class="mono">zig 0.16.0 · tolerance 1e-12 · 2026-09-03T02:01:56Z</span></p>
 </section>
 
 <section>
@@ -895,9 +954,9 @@ footer p { max-width:var(--measure); }
      stale disclaimer is the worst available bug.</p>
   <p class="mono" style="font-size:.8125rem;color:var(--muted)">
      28 statistical modules ·
-     8 battery modules ·
-     14 method documents ·
-     head bdef4bd “Put the DOI on the page” (2026-09-01)</p>
+     11 battery modules ·
+     15 method documents ·
+     head 1977682 “Re-verify the agreement against a committed tree” (2026-09-02)</p>
 </section>
 
 <section>
@@ -928,7 +987,7 @@ footer p { max-width:var(--measure); }
 <footer>
   <p>Simulation-validated design work. No cell has been measured. Every number
      on this page is reproducible from the repository at commit
-     <code>bdef4bd</code>.</p>
+     <code>1977682</code>.</p>
 </footer>
 
 </main>
